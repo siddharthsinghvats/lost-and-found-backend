@@ -20,7 +20,7 @@ const usersSchema = new mongoose.Schema({
     lostPosts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'lostPosts'
-    }],
+    }], 
     foundPosts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'foundPosts'
