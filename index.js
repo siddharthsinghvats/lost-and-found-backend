@@ -5,12 +5,13 @@ const {foundRouter} = require('./controllers/found');
 const cookieParser = require('cookie-parser');
 
 const cors = require('cors');
-const db = require('./db')
+const db = require('./db');
+const { userRouter } = require('./controllers/user');
 
 // create a new server
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({origin: 'http://localhost:5000',credentials: true}));
 app.use(cookieParser());
 
 
@@ -19,9 +20,10 @@ app.use(cookieParser());
 app.use("/auth",authRouter);
 app.use('/lost',lostRouter);
 app.use('/found',foundRouter);
+app.use('/user', userRouter);
 
 db();
 
-app.listen(5000,()=>{
+app.listen(process.env.PORT||5000,()=>{
     console.log("Server Running");
 })

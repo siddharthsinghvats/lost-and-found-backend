@@ -24,7 +24,7 @@ const lostItemSchema = new mongoose.Schema({
     },
     lostDate: {
         type: String,
-        default: new Date().toLocaleString()
+        default: new Date().toLocaleDateString()
     },
     itemImg: {
         type: String,

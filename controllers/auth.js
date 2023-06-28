@@ -9,10 +9,16 @@ const DatauriParser = require("datauri/parser");
 const {userVerification} = require('../middleware/auth')
 const parser = new DatauriParser();
 
+const cloud_name = process.env.CLOUD_NAME;
+const api_key = process.env.API_KEY;
+const api_secret = process.env.API_SECRET;
+
+
+
 cloudinary.config({
-    cloud_name: 'dntah3mts',
-    api_key: '415326662792133',
-    api_secret: 'OxEbpzm8q-aNRapXGcdBynqV5Ls'
+    cloud_name,
+    api_key,
+    api_secret
 });
 
 const authRouter = express.Router()
@@ -34,7 +40,7 @@ authRouter.post('/signup',
         }
         catch (err) {
             res.status(400).json({
-                messge: 'something went wrong while processing your request',
+                message: 'something went wrong while processing your request',
                 data: {
                     err
                 }
@@ -42,21 +48,18 @@ authRouter.post('/signup',
         }
         try {
             
+            
             const salt = await bcrypt.genSalt(10);
             const hash = await bcrypt.hash(user.password, salt);
             user.password = hash;
             
             const token = createSecretToken(user._id);
-            res.cookie("token", token, {
-                withCredentials: true,
-                httpOnly: true,
-            });
             const save_user = await User.create(user);
-            delete save_user.password;
-            delete save_user.profileImg;
+            delete  save_user.password;
+            save_user.token = token
             res
                 .status(201)
-                .json({ message: "User signed in successfully", success: true, save_user });
+                .json({ message: "User signed in successfully", success: true, user:save_user });
 
         }
         catch (err) {
@@ -71,16 +74,14 @@ authRouter.post('/login' ,async (req, res) => {
         const user_exists = await User.findOne({ email: user.email });
         if (user_exists) {
             const passwordOk = await bcrypt.compare(user.password, user_exists.password);
-            if (passwordOk) { 
-                const token = createSecretToken(save_user._id);
-                res.cookie("token", token, {
-                    withCredentials: true,
-                    httpOnly: true,
-                });
-                delete user_exists.password;
+            if (passwordOk) {
+                
+                const token = createSecretToken(user_exists._id);
+                delete user_exists._doc.password;
+                user_exists._doc.token = token;
                 res
                 .status(201)
-                .json({ message: "User logged in successfully", success: true, user_exists });
+                .json({ message: "User logged in successfully", success: true, user:user_exists._doc });
             } else {
                 return res.status(401).json({ "error": "wrong email or password" })
             }
